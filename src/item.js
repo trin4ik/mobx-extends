@@ -50,12 +50,12 @@ class StoreItem {
             this.fillObjectFunction(item[0], item[1])
         })
         Object.entries(override).map(item => {
-            this[item[0]] = item[1]
+            this[item[0]] = item[1];
         })
     }
 
     fillObjectFunction (key, value) {
-        this.data[key] = value
+        this.data[key] = value;
     }
 
     set (key, value, { silent = false }) {
