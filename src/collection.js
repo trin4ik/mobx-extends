@@ -1,5 +1,4 @@
 import { action, computed, makeObservable, observable, reaction, runInAction } from "mobx"
-import api from "../../network/api"
 import dayjs from "dayjs"
 import { v4 as uuidv4 } from 'uuid'
 

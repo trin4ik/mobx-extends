@@ -1,5 +1,5 @@
-import StoreCollection from "./extends/collection"
-import StoreItem from "./extends/item"
+import StoreCollection from "./src/collection"
+import StoreItem from "./src/item"
 
 export {
     StoreItem,
