@@ -1,6 +1,76 @@
+import { action, makeObservable, observable } from "mobx"
+
+class StoreCollection {
+
+    loading = true
+    items = []
+    transport = false
+
+    constructor (store, options = {}) {
+        const { transport = false, name = false } = options
+        this.store = store
+
+        if (!name) {
+            this.name = this.constructor.name
+        }
+
+        if (transport) {
+            this.transport = transport
+            this.transport.processor.start(this.transport)
+        }
+
+        this.loading = false
+
+        makeObservable(this, {
+            loading: observable,
+            items: observable,
+
+            fetch: action
+        })
+    }
+
+    async fetch (data = {}, options = {}) {
+
+        if (this.transport) {
+            this.loading = true
+            try {
+                return await this.transport.processor.action('fetch', data, options)
+            } catch (error) {
+                throw error
+            } finally {
+                this.loading = false
+            }
+            this.loading = false
+        }
+    }
+
+    filter (keys = {}) {
+        return this.items.filter(item => {
+            const next = Object.entries(keys).map(key => {
+                if (typeof key[1] === 'function') {
+                    return key[1](item.get(key[0], null, false))
+                } else {
+                    if (item.get(key[0], null, false) === key[1]) {
+                        return true
+                    } else {
+                        return false
+                    }
+                }
+            })
+            if (next.indexOf(false) !== -1) {
+                return false
+            } else {
+                return true
+            }
+        })
+    }
+}
+
+export default StoreCollection
+
+/*
 import { action, computed, makeObservable, observable, reaction, runInAction } from "mobx"
 import dayjs from "dayjs"
-import { v4 as uuidv4 } from 'uuid'
 
 class StoreCollection {
 
@@ -186,10 +256,10 @@ class StoreCollection {
         if (data.id) {
             id = data.id
         }
-        if (id === null) {
+        /!*if (id === null) {
             id = uuidv4()
             data.id = id
-        }
+        }*!/
         if (parseInt(id) == id) {
             id = parseInt(id)
         }
@@ -205,7 +275,7 @@ class StoreCollection {
     removeDraft (item) {
         let id = item.get ? item.get('id') : item.id
 
-        AsyncStorage.removeItem('draft:' + this.name + ':' + id)
+        DraftAsyncStorage.removeItem('draft:' + this.name + ':' + id)
         this.drafts = this.drafts.filter(i => i.get('id') !== id)
     }
 
@@ -235,3 +305,4 @@ class StoreCollection {
 }
 
 export default StoreCollection
+*/

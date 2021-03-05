@@ -1,36 +1,23 @@
 {
-    "name": "mobx-extends",
-    "version": "0.0.1-main.2",
-    "description": "some mobx extends",
-    "main": "index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "build": "./node_modules/.bin/babel src -d dist --watch"
+        "build": "./node_modules/.bin/webpack --config webpack.config.js --watch"
     },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/trin4ik/mobx-extends.git"
-    },
-    "keywords": [
-        "mobx",
-        "react"
-    ],
-    "author": "trin4ik",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/trin4ik/mobx-extends/issues"
-    },
-    "homepage": "https://github.com/trin4ik/mobx-extends#readme",
     "dependencies": {
+        "@react-native-async-storage/async-storage": "^1.14.1",
+        "axios": "^0.21.1",
         "dayjs": "^1.10.4",
+        "flat": "^5.0.2",
         "lodash": "^4.17.20",
         "mobx": "^6.1.6",
-        "uuid": "^8.3.2"
+        "mobx-utils": "^6.0.3"
     },
     "devDependencies": {
-        "@babel/cli": "^7.12.16",
-        "@babel/core": "^7.12.16",
         "@babel/plugin-proposal-class-properties": "^7.12.13",
-        "babel-watch": "^7.4.0"
+        "@babel/preset-env": "^7.13.9",
+        "babel-loader": "^8.2.2",
+        "clean-webpack-plugin": "^3.0.0",
+        "path": "^0.12.7",
+        "webpack": "^5.24.2",
+        "webpack-cli": "^4.5.0"
     }
 }
