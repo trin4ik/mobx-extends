@@ -51,9 +51,7 @@ class TransportAxios {
     static async action (action = 'fetch', data = {}, options = {}) {
         if (!this[action]?.method || ['get', 'post', 'put', 'delete', 'patch'].indexOf(this[action].method) === -1) throw 'unknown method "' + this[action]?.method + '"'
 
-        console.log('opt1', options)
         await this.pre(this.processor, action, data, options)
-        console.log('opt2', options)
 
         const url = this[action].url.replace(/{[^}]+}/g, item => {
             const local = get(data, item.replace('{', '').replace('}', ''))

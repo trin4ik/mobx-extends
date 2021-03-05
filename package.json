@@ -1,12 +1,15 @@
 {
-    "version": "0.0.1",
+    "version": "0.1.5",
     "name": "mobx-extends",
     "scripts": {
-        "build": "./node_modules/.bin/webpack --config webpack.config.js --watch",
-        "install": "./node_modules/.bin/webpack --config webpack.prod.js"
+        "start": "./node_modules/.bin/webpack --config webpack.config.js --watch",
+        "build": "webpack --config webpack.prod.js --mode production"
     },
-    "main": "./src/index.js",
-    "dependencies": {
+    "main": "dist/index.js",
+    "files": [
+        "dist"
+    ],
+    "peerDependencies": {
         "@react-native-async-storage/async-storage": "^1.14.1",
         "axios": "^0.21.1",
         "dayjs": "^1.10.4",
