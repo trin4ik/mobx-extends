@@ -2,7 +2,7 @@
     "version": "0.0.1",
     "name": "mobx-extends",
     "scripts": {
-        "build": "./node_modules/.bin/webpack --config webpack.config.js --watch"
+        "build": "./node_modules/.bin/webpack --config webpack.config.js"
     },
     "dependencies": {
         "@react-native-async-storage/async-storage": "^1.14.1",

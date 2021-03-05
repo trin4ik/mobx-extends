@@ -53,7 +53,9 @@ class StoreItem {
         if (draft?.enabled) {
             this.draft = draft
             this.loadDraft().then(() => {
-                this.loading = false
+                runInAction(() => {
+                    this.loading = false
+                })
             })
         } else {
             this.loading = false
