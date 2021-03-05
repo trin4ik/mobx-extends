@@ -4,6 +4,7 @@
     "scripts": {
         "build": "./node_modules/.bin/webpack --config webpack.config.js"
     },
+    "main": "./src/index.js",
     "dependencies": {
         "@react-native-async-storage/async-storage": "^1.14.1",
         "axios": "^0.21.1",
