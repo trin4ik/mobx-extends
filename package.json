@@ -1,22 +1,23 @@
 {
-    "version": "0.1.5",
+    "version": "0.1.41",
     "name": "mobx-extends",
     "scripts": {
-        "start": "./node_modules/.bin/webpack --config webpack.config.js --watch",
-        "build": "webpack --config webpack.prod.js --mode production"
+        "start": "webpack --config webpack.config.js --mode development --watch",
+        "build": "webpack --config webpack.config.js --mode production"
     },
-    "main": "dist/index.js",
+    "main": "src/index.js",
     "files": [
-        "dist"
+        "src"
     ],
-    "peerDependencies": {
+    "dependencies": {
         "@react-native-async-storage/async-storage": "^1.14.1",
         "axios": "^0.21.1",
         "dayjs": "^1.10.4",
         "flat": "^5.0.2",
         "lodash": "^4.17.20",
         "mobx": "^6.1.6",
-        "mobx-utils": "^6.0.3"
+        "mobx-utils": "^6.0.3",
+        "uuid": "^8.3.2"
     },
     "devDependencies": {
         "@babel/plugin-proposal-class-properties": "^7.12.13",

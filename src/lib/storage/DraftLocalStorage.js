@@ -1,18 +1,18 @@
 class DraftLocalStorage {
 
-    static async get (key) {
+    async get (key) {
         return JSON.parse(localStorage.getItem(key))
     }
 
-    static async set (key, value) {
+    async set (key, value) {
         localStorage.setItem(key, JSON.stringify(value))
     }
 
-    static async remove (key) {
+    async remove (key) {
         localStorage.removeItem(key)
     }
 
-    static async clear () {
+    async clear () {
         localStorage.clear()
     }
 }

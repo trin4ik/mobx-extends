@@ -1,51 +1,142 @@
-import { action, makeObservable, observable } from "mobx"
+import { action, computed, makeObservable, observable, runInAction } from "mobx"
+import { v4 as uuid } from 'uuid'
+import { TransportLocalStorage } from "../index"
 
 class StoreCollection {
 
-    loading = true
+    id = uuid()
     items = []
     transport = false
+    autoSave = false
+    loadingFalseTimeout = 0
+    _loading = false
+
+    get loading () {
+        return this._loading
+    }
+
+    set loading (value) {
+        if (!value && this.loadingFalseTimeout) {
+            new Promise(resolve => setTimeout(resolve, this.loadingFalseTimeout)).then(() => {
+                this._loading = value
+            })
+        } else {
+            this._loading = value
+        }
+
+    }
 
     constructor (store, options = {}) {
-        const { transport = false, name = false } = options
+        const { id = false, transport = false, name = false, loadingFalseTimeout = false, autoSave = false } = options
         this.store = store
 
         if (!name) {
             this.name = this.constructor.name
         }
+        if (loadingFalseTimeout) {
+            this.loadingFalseTimeout = loadingFalseTimeout
+        }
+        if (autoSave) {
+            this.autoSave = autoSave
+        }
+        if (id) {
+            this.id = id
+        }
 
         if (transport) {
             this.transport = transport
-            this.transport.processor.start(this.transport)
+            if (typeof this.transport.getPrefix === 'function') {
+                this.transport.getPrefix = () => this.getUniqTransportId()
+            }
         }
 
         this.loading = false
 
         makeObservable(this, {
-            loading: observable,
+            id: observable,
+            _loading: observable,
             items: observable,
+            autoSave: observable,
 
-            fetch: action
+            addItem: action,
+            removeItem: action,
+            action,
+            update: action,
+
+            toJson: computed,
+            loading: computed,
         })
     }
 
-    async fetch (data = {}, options = {}) {
+    getUniqId () {
+        return 'collection-' + this.name.toLowerCase() + '-' + this.id
+    }
 
+    getUniqTransportId () {
+        return this.getUniqId()
+    }
+
+    async action (type = 'fetch', data, options) {
         if (this.transport) {
             this.loading = true
             try {
-                return await this.transport.processor.action('fetch', data, options)
+                const result = await this.transport.action(type, data, options)
+                if (result && this.transport instanceof TransportLocalStorage) {
+                    runInAction(() => {
+                        result.map(item => {
+                            this.addItem(item)
+                        })
+                    })
+                }
+                return result
             } catch (error) {
                 throw error
             } finally {
-                this.loading = false
+                runInAction(() => {
+                    this.loading = false
+                })
             }
-            this.loading = false
         }
     }
 
-    filter (keys = {}) {
+    async fetch (data, options) {
+        return this.action('fetch', data, options)
+    }
+
+    async search (data, options) {
+        return this.action('search', data, options)
+    }
+
+    async update (data, options = {}) {
+        if (this.transport) {
+
+            if (this.transport instanceof TransportLocalStorage) {
+                data = []
+                this.items.map(item => {
+                    data.push(item.getUniqTransportId())
+                })
+            }
+
+            this.loading = true
+            try {
+                return await this.transport.action('update', data, options)
+            } catch (error) {
+                throw error
+            } finally {
+                runInAction(() => {
+                    this.loading = false
+                })
+            }
+        }
+    }
+
+    filter (keys = false, list = ['fetch']) {
+        if (!Array.isArray(list)) {
+            list = [list]
+        }
         return this.items.filter(item => {
+            if (list.length && !item.list.filter(i => list.includes(i)).length) return false
+
             const next = Object.entries(keys).map(key => {
                 if (typeof key[1] === 'function') {
                     return key[1](item.get(key[0], null, false))
@@ -57,252 +148,29 @@ class StoreCollection {
                     }
                 }
             })
-            if (next.indexOf(false) !== -1) {
+            if (next.includes(false)) {
                 return false
             } else {
                 return true
             }
         })
     }
-}
 
-export default StoreCollection
-
-/*
-import { action, computed, makeObservable, observable, reaction, runInAction } from "mobx"
-import dayjs from "dayjs"
-
-class StoreCollection {
-
-    status = null
-    name = null
-    error = null
-    items = []
-    drafts = []
-    store = null
-    lastUpdate = null
-    transport = {
-        fetch: false
-    }
-    itemClass = null
-    saveDrafts = null
-    useDraft = false
-
-    AsyncStorage = null
-
-    constructor (store, data = {}) {
-        makeObservable(this, {
-            status: observable,
-            name: observable,
-            error: observable,
-            itemClass: observable,
-            items: observable,
-            drafts: observable,
-            lastUpdate: observable,
-
-            findItem: action,
-
-            addItem: action,
-            removeItem: action,
-            fetchItems: action,
-            getItems: computed,
-
-            addDraft: action,
-            removeDraft: action,
-            fetchDrafts: action,
-            getDrafts: computed,
-
-            getIdsForUpdate: computed,
-        })
-        this.store = store
-
-        Object.entries(data).map(item => {
-            this[item[0]] = item[1]
-        })
-
-        if (!this.name) {
-            this.name = this.constructor.name
-        }
-
-        this.saveDrafts = reaction(() => this.drafts, drafts => {
-            drafts.map(async draft => {
-                await this.AsyncStorage.setItem('draft:' + this.name + ':' + draft.get('id'), JSON.stringify({ data: draft.toJson, type: draft.type }))
-            })
-        })
+    async addItem (data) {
+        this.items.push(data)
     }
 
-    findItem ({ type = 'add', id = null }) {
-        let item = false
-        switch (type) {
-            case 'view': {
-                item = this.items.find(item => item.get('id') === id)
-                break
-            }
-            case 'add': {
-                if (this.useDraft) {
-                    const find = this.drafts.find(item => item.type === 'add')
-                    if (find) {
-                        item = find
-                    } else {
-                        item = this.addDraft()
-                    }
-                } else {
-                    item = this.addItem()
-                }
-                break
-            }
-            case 'edit': {
-                const find = this.items.find(item => item.get('id') === id)
-                if (find) {
-                    if (this.useDraft) {
-                        const draft = this.drafts.find(item => item.get('id') === id)
-                        if (draft) {
-                            item = draft
-                        } else {
-                            item = this.addDraft(find.toJson)
-                        }
-                    } else {
-                        item = find
-                    }
-                }
-                break
-            }
-        }
-        return item
+    removeItem (id) {
+        this.items = this.items.filter(item => item.id !== id)
     }
 
-    async fetchDrafts () {
-        const keys = await this.AsyncStorage.getAllKeys()
-        await keys.map(async item => {
-            if (item.indexOf('draft:' + this.name + ':') === 0) {
-                const id = item.substr(('draft:' + this.name + ':').length)
-                const value = await this.AsyncStorage.getItem(item)
-                const json = JSON.parse(value)
-                runInAction(() => {
-                    this.addDraft(json.data, { type: json.type })
-                })
-
-            }
-        })
-    }
-
-    async fetchItems ({ fetchData = {} }) {
-        if (!this.transport.fetch) return false
-
-        this.error = null
-        this.status = "loading"
-
-        try {
-            const result = await api[this.transport.fetch.method ? this.transport.fetch.method : 'post'](typeof this.transport.fetch === 'object' ? this.transport.fetch.url : this.transport.fetch, {
-                data: {
-                    ...fetchData,
-                    check: this.getIdsForUpdate
-                }
-            })
-
-            runInAction(() => {
-                this.status = "done"
-
-                if (result.data.success) {
-                    result.data.data.collection.map(item => {
-                        const find = this.items.find(i => i.get('id') === item.id)
-                        if (!find) {
-                            this.addItem(item)
-                        } else {
-                            if (find.time.server.updated_at.unix() !== dayjs(item.updated_at).unix()) {
-                                find.fill(item)
-                            }
-                        }
-
-                    })
-                    Object.entries(result.data.data.check).map(([id, action]) => {
-                        switch (action) {
-                            case 'remove': {
-                                this.removeItem({ id: parseInt(id) })
-                                break
-                            }
-                        }
-                    })
-
-                } else {
-                    this.status = 'error'
-                    this.error = result.data.error
-                }
-            })
-        } catch (e) {
-            runInAction(() => {
-                this.status = "error"
-                this.error = e
-            })
-        }
-    }
-
-    addItem (data = {}, method = 'push') {
-        const item = new this.itemClass(this, data)
-        this.items[method](item)
-        return item
-    }
-
-    removeItem (item) {
-        let id = item.get ? item.get('id') : item.id
-
-        this.items = this.items.filter(i => i.get('id') !== id)
-        this.removeDraft(this.drafts.find(i => i.get('id') === id))
-
-    }
-
-    addDraft (data = {}, id = null) {
-        data.type = 'new'
-        if (data.id) {
-            id = data.id
-        }
-        /!*if (id === null) {
-            id = uuidv4()
-            data.id = id
-        }*!/
-        if (parseInt(id) == id) {
-            id = parseInt(id)
-        }
-        if (this.items.find(item => item.get('id') === id)) {
-            data.type = 'draft'
-        }
-
-        const draft = new this.itemClass(this, data, { type: data.type })
-        this.drafts.push(draft)
-        return draft
-    }
-
-    removeDraft (item) {
-        let id = item.get ? item.get('id') : item.id
-
-        DraftAsyncStorage.removeItem('draft:' + this.name + ':' + id)
-        this.drafts = this.drafts.filter(i => i.get('id') !== id)
-    }
-
-    get getItems () {
-        const arr = []
+    get toJson () {
+        const result = []
         this.items.map(item => {
-            arr.push(item.toJson)
-        })
-        return arr
-    }
-
-    get getDrafts () {
-        const arr = []
-        this.drafts.map(item => {
-            arr.push(item.toJson)
-        })
-        return arr
-    }
-
-    get getIdsForUpdate () {
-        const result = {}
-        this.items.map(item => {
-            result[item.get('id')] = item.time.server.updated_at
+            result.push(item.toJson)
         })
         return result
     }
 }
 
 export default StoreCollection
-*/

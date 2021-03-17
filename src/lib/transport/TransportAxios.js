@@ -1,72 +1,77 @@
 import axios from "axios"
+import MobxExtends from '../../index'
 import get from 'lodash/get'
 
 class TransportAxios {
 
-    static prefix = ''
-    static processor = axios
+    prefix = ''
+    processor = axios
 
-    static add = {
+    add = {
         method: 'put',
         url: ''
     }
 
-    static fetch = {
+    fetch = {
         method: 'get',
         url: ''
     }
 
-    static update = {
+    update = {
         method: 'post',
         url: ''
     }
 
-    static delete = {
+    delete = {
         method: 'delete',
         url: ''
     }
 
-    static async pre () {
-        return
+    search = {
+        method: 'post',
+        url: ''
     }
 
-    static start (data = {}) {
+    constructor (data = {}) {
         Object.entries(data).map(item => {
-            if (['prefix', 'pre'].indexOf(item[0]) !== -1) {
+            if (['prefix'].indexOf(item[0]) !== -1) {
                 this[item[0]] = item[1]
-            } else if (['add', 'fetch', 'update', 'delete'].indexOf(item[0]) !== -1) {
+            } else if (['add', 'fetch', 'update', 'delete', 'search'].indexOf(item[0]) !== -1) {
                 if (typeof item[1] === 'string') {
                     this[item[0]].url = item[1]
                 } else {
                     this[item[0]] = item[1]
                 }
-            } else if (['processor'].indexOf(item[0]) !== -1) {
-                // ignored
             } else {
                 console.warn('unknown property "', item[0], '" in create transport')
             }
         })
     }
 
-    static async action (action = 'fetch', data = {}, options = {}) {
+    async action (action = 'fetch', data = {}, options = {}) {
         if (!this[action]?.method || ['get', 'post', 'put', 'delete', 'patch'].indexOf(this[action].method) === -1) throw 'unknown method "' + this[action]?.method + '"'
 
-        await this.pre(this.processor, action, data, options)
+        options.headers = { ...MobxExtends.config?.transport?.axios?.headers, ...options.headers }
 
-        const url = this[action].url.replace(/{[^}]+}/g, item => {
-            const local = get(data, item.replace('{', '').replace('}', ''))
-            if (local) {
-                return local
-            }
-            return item
-        })
+        let url
+        if (typeof this[action].url === 'function') {
+            url = this[action].url(data)
+        } else {
+            url = this[action].url.replace(/{[^}]+}/g, item => {
+                const local = get(data, item.replace('{', '').replace('}', ''))
+                if (local) {
+                    return local
+                }
+                return item
+            })
+        }
 
         try {
             let result = false
             switch (this[action]?.method) {
                 case 'get':
                 case 'delete': {
-                    options.params = data
+                    //options.params = data
                     result = await this.processor[this[action].method](this.prefix + url, options)
                     break
                 }
