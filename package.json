@@ -1,32 +1,33 @@
 {
-    "version": "0.1.41",
-    "name": "mobx-extends",
-    "scripts": {
-        "start": "webpack --config webpack.config.js --mode development --watch",
-        "build": "webpack --config webpack.config.js --mode production"
-    },
-    "main": "src/index.js",
-    "files": [
-        "src"
-    ],
-    "dependencies": {
-        "@react-native-async-storage/async-storage": "^1.14.1",
-        "axios": "^0.21.1",
-        "dayjs": "^1.10.4",
-        "flat": "^5.0.2",
-        "lodash": "^4.17.20",
-        "mobx": "^6.1.6",
-        "mobx-utils": "^6.0.3",
-        "uuid": "^8.3.2"
-    },
-    "devDependencies": {
-        "@babel/plugin-proposal-class-properties": "^7.12.13",
-        "@babel/preset-env": "^7.13.9",
-        "babel-loader": "^8.2.2",
-        "clean-webpack-plugin": "^3.0.0",
-        "path": "^0.12.7",
-        "webpack": "^5.24.2",
-        "webpack-cli": "^4.5.0",
-        "webpack-merge": "^5.7.3"
-    }
+  "version": "0.1.46",
+  "name": "mobx-extends",
+  "scripts": {
+    "start": "webpack --config webpack.config.js --mode development --watch",
+    "build": "webpack --config webpack.config.js --mode production"
+  },
+  "main": "src/index.js",
+  "files": [
+    "src"
+  ],
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "^1.14.1",
+    "axios": "^0.21.1",
+    "dayjs": "^1.10.4",
+    "flat": "^5.0.2",
+    "lodash": "^4.17.20",
+    "mobx": "^6.1.8",
+    "mobx-utils": "^6.0.3",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.13.10",
+    "@babel/plugin-proposal-class-properties": "^7.12.13",
+    "@babel/preset-env": "^7.13.9",
+    "babel-loader": "^8.2.2",
+    "clean-webpack-plugin": "^3.0.0",
+    "path": "^0.12.7",
+    "webpack": "^5.24.2",
+    "webpack-cli": "^4.5.0",
+    "webpack-merge": "^5.7.3"
+  }
 }

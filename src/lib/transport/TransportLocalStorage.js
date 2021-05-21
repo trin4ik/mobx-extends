@@ -22,7 +22,7 @@ class TransportLocalStorage {
         try {
             let result = false
 
-            let key = null
+            let key
             if (typeof data === 'string') {
                 key = data
             } else {
@@ -35,18 +35,17 @@ class TransportLocalStorage {
                 })
             }
 
-            console.log('get key', key)
-
             switch (action) {
                 case 'fetch': {
                     result = JSON.parse(localStorage.getItem(key))
                     break
                 }
+                case 'add':
                 case 'update': {
                     result = localStorage.setItem(key, JSON.stringify(data))
                     break
                 }
-                case 'delete': {
+                case 'remove': {
                     result = localStorage.removeItem(key)
                     break
                 }
