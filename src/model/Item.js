@@ -361,7 +361,7 @@ class StoreItem {
 			const oldDraftId = this.getUniqDraftId()
 
 			if (this.id === 'new' && this.transport instanceof TransportLocalStorage) {
-				this.fill({id: uuid()})
+				this.fill({ id: uuid() })
 			}
 
 			const result = await this.action('add', this.toJson)
@@ -386,7 +386,7 @@ class StoreItem {
 	async remove () {
 
 		try {
-			const result = await this.action('remove', this.toJson)
+			const result = await this.action('delete', this.toJson)
 
 			if (this.draft && this.draft) {
 				await this.removeDraft()
