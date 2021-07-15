@@ -414,7 +414,9 @@ class StoreItem {
 			const result = await this.action('update', this.toJson)
 
 			if (this.draft) {
-				this.fill(merge(this.data, this._draft))
+				runInAction(() => {
+					this.fill(merge(this.data, this._draft))
+				})
 				await this.removeDraft(oldDraftId)
 			}
 
