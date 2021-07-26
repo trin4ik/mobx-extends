@@ -214,10 +214,9 @@ class StoreItem {
 		const setter = camelCase('set-' + key + '-value')
 		if (typeof this[setter] === 'function') {
 			set(data, key, this[setter](value))
-			return this.get(key)
+		} else {
+			set(data, key, value)
 		}
-
-		set(data, key, value)
 
 		if (this.draft && !withoutDraft) {
 			this.draft.set(this.getUniqDraftId(), this._draft)
