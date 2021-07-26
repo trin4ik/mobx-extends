@@ -152,7 +152,7 @@ class StoreItem {
 	}
 
 	fill (data, override = {}) {
-		const fill = merge(this.defaults, data)
+		const fill = merge({}, this.defaults, data)
 
 		Object.entries(fill).map(item => {
 			this.set(item[0], item[1], true)
@@ -264,16 +264,16 @@ class StoreItem {
 	}
 
 	get toJson () {
-		return merge(this.defaults, this.data, this._draft)
+		return merge({}, this.defaults, this.data, this._draft)
 	}
 
 	get toJsonWithoutDraft () {
-		return merge(this.defaults, this.data)
+		return merge({}, this.defaults, this.data)
 	}
 
 	get isDraft () {
 		const result = {}
-		const tmp = flat(merge(this.defaults, this.data, this._draft))
+		const tmp = flat(merge({}, this.defaults, this.data, this._draft))
 
 		Object.entries(tmp).map(item => {
 			if (!this.draft) result[item[0]] = false
@@ -289,7 +289,7 @@ class StoreItem {
 
 	get isError () {
 		const result = {}
-		const tmp = flat(merge(this.defaults, this.data, this._draft))
+		const tmp = flat(merge({}, this.defaults, this.data, this._draft))
 
 		Object.entries(tmp).map(item => {
 			if (get(this.error, item[0]) !== undefined) {
@@ -366,7 +366,7 @@ class StoreItem {
 			const result = await this.action('add', this.toJson)
 
 			if (this.draft) {
-				this.fill(merge(this.data, this._draft))
+				this.fill(merge({}, this.data, this._draft))
 				await this.removeDraft(oldDraftId)
 			}
 
@@ -414,7 +414,7 @@ class StoreItem {
 
 			if (this.draft) {
 				runInAction(() => {
-					this.fill(merge(this.data, this._draft))
+					this.fill(merge({}, this.data, this._draft))
 				})
 				await this.removeDraft(oldDraftId)
 			}
